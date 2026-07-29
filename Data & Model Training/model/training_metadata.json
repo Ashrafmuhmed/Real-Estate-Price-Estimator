@@ -1,0 +1,71 @@
+{
+  "best_model": "RandomForestRegressor",
+  "metrics": {
+    "LinearRegression": {
+      "rmse": 31999.801046977307,
+      "mae": 24653.739517277976,
+      "r2": 0.7055755393352325
+    },
+    "RandomForestRegressor": {
+      "rmse": 28744.618449766633,
+      "mae": 20968.345799706054,
+      "r2": 0.7624295455886011
+    },
+    "GradientBoostingRegressor": {
+      "rmse": 29000.101052587634,
+      "mae": 21264.64413824912,
+      "r2": 0.7581877187078043
+    }
+  },
+  "cleaning_summary": {
+    "initial_rows": 1460,
+    "rows_after_missing_drop": 1460,
+    "rows_after_duplicate_drop": 1459,
+    "rows_after_domain_filters": 1450,
+    "rows_after_iqr_filter": 1348,
+    "dropped_missing": 0,
+    "dropped_duplicates": 1,
+    "dropped_domain": 9,
+    "dropped_iqr": 102,
+    "iqr_bounds": {
+      "sqft": [
+        160.125,
+        2749.125
+      ],
+      "bedrooms": [
+        0.5,
+        4.5
+      ],
+      "bathrooms": [
+        -1.25,
+        4.75
+      ],
+      "age": [
+        -43.0,
+        141.0
+      ],
+      "price": [
+        4000.0,
+        340000.0
+      ]
+    }
+  },
+  "feature_engineering_summary": {
+    "feature_order": [
+      "sqft",
+      "bedrooms",
+      "bathrooms",
+      "age"
+    ],
+    "target_name": "price",
+    "price_skew": 0.6891247629620073,
+    "used_log_price": false
+  },
+  "preprocessing_summary": {
+    "test_size": 0.2,
+    "random_state": 42,
+    "scaler": "StandardScaler",
+    "train_rows": 1078,
+    "test_rows": 270
+  }
+}
