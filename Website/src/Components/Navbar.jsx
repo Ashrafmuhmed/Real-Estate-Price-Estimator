@@ -40,7 +40,18 @@ export default function Navbar() {
           >
             Estimate
           </NavLink>
-
+          <NavLink
+            to="/portfolio"
+            className={({ isActive }) =>
+              `transition ${
+                isActive
+                  ? "text-[#A5A58D] font-semibold"
+                  : "text-white hover:text-[#6B705C]"
+              }`
+            }
+          >
+            Portfolio
+          </NavLink>
           <NavLink
             to="/about"
             className={({ isActive }) =>
