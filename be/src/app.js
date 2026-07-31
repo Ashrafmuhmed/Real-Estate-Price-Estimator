@@ -3,6 +3,7 @@ import cors from "cors";
 import morgan from "morgan";
 import config from "./config.js";
 import estimateRouter from "./routes/estimate.js";
+import portfolioRouter from "./routes/portfolio.js";
 import errorHandler from "./middleware/errorHandler.js";
 
 const app = express();
@@ -16,6 +17,7 @@ app.get("/", (_req, res) => {
 });
 
 app.use("/estimate", estimateRouter);
+app.use("/portfolio", portfolioRouter);
 
 app.use((_req, res) => {
   res.status(404).json({ error: "Not found" });
