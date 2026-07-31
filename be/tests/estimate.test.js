@@ -3,6 +3,7 @@ import request from "supertest";
 
 jest.unstable_mockModule("../src/services/predictorService.js", () => ({
   estimatePrice: jest.fn(),
+  estimatePortfolioPrice: jest.fn(),
 }));
 
 const { estimatePrice } = await import("../src/services/predictorService.js");

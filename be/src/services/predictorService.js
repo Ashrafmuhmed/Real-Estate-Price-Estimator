@@ -14,16 +14,5 @@ export async function estimatePrice(features) {
 
 export async function estimatePortfolioPrice(featureList) {
   const { data } = await client.post("/predict-batch", { records: featureList });
- 
-  const predictions =featureList.map((house,index)=>
-   ({
-       house,predicted_price:data.prices[index],
-    }));
-
-  const totalPredictedPrice=data.prices.reduce((sum,price)=> sum+price,0);
-
- 
-  return{
-    predictions,
-    totalPredictedPrice};
+  return data.prices;
 }
