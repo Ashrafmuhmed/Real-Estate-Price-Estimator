@@ -3,7 +3,7 @@ import Footer from "./Footer";
 
 export default function Layout({ children }) {
   return (
-    <div className="min-h-screen bg-slate-950 dark:bg-slate-950 light:bg-gray-100 transition-colors duration-500">
+    <div className="min-h-screen bg-[#F8F8F5] text-[#111111]">
       <Navbar />
 
       <main>{children}</main>

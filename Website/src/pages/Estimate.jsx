@@ -1,7 +1,7 @@
 import { useState } from "react";
-import ResultCard from "../components/resultsCard";
-import LoadingSpinner from "../components/LoadingSpinner";
 import { estimateHouse } from "../secrvices/api";
+import ResultCard from "../Components/resultsCard";
+import LoadingSpinner from "../Components/LoadingSpinner";
 
 export default function Estimate() {
   const [form, setForm] = useState({
@@ -22,106 +22,148 @@ export default function Estimate() {
   }
 
   async function handleSubmit(e) {
+    e.preventDefault();
+
     if (!form.sqft || !form.bedrooms || !form.bathrooms || !form.age) {
       alert("Please fill in all fields.");
       return;
     }
-    e.preventDefault();
-
-    setLoading(true);
-
-    // ============================
-    // TODO:
-    // Replace this with your API call
-    //
-    // const result = await estimateHouse(form);
-    // setPrice(result.estimated_price);
-    // ============================
 
     try {
       setLoading(true);
+      setPrice(null);
 
       const result = await estimateHouse(form);
 
       setPrice(result.predicted_price);
     } catch (error) {
-      alert("Prediction failed.");
+      alert(error.message);
     } finally {
       setLoading(false);
     }
   }
 
+  const inputClass =
+    "w-full mt-2 rounded-xl bg-[#F8F8F5] border border-black/10 p-4 text-[#111111] outline-none focus:ring-2 focus:ring-[#6B705C] focus:border-[#6B705C] transition";
+
   return (
-    <section className="max-w-6xl mx-auto py-16 px-6">
-      <h1 className="text-5xl font-black mb-10">Property Price Estimator</h1>
+    <section className="max-w-7xl mx-auto px-6 py-16">
+      <div className="max-w-3xl mb-12">
+        <p className="uppercase tracking-[0.3em] text-[#6B705C] text-sm font-semibold">
+          AI Valuation
+        </p>
+
+        <h1 className="text-5xl md:text-6xl font-black mt-3">
+          Property Price Estimator
+        </h1>
+
+        <p className="text-gray-600 text-lg mt-5">
+          Enter the basic characteristics of a property and let our machine
+          learning model estimate its value.
+        </p>
+      </div>
 
       <div className="grid lg:grid-cols-2 gap-8">
-        {/* Left Card */}
+        {/* Form */}
+        <div className="bg-white rounded-3xl border border-black/10 p-8 shadow-sm">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold">Property Information</h2>
 
-        <div className="rounded-3xl bg-slate-900 border border-white/10 p-8">
-          <h2 className="text-2xl font-bold mb-8">Property Information</h2>
+            <p className="text-gray-500 mt-2">
+              Enter accurate information for a better estimate.
+            </p>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label>Square Feet</label>
+              <label className="font-semibold">Square Feet</label>
 
               <input
                 type="number"
                 name="sqft"
                 value={form.sqft}
                 onChange={handleChange}
-                className="w-full mt-2 rounded-xl bg-slate-800 p-4 outline-none"
+                placeholder="e.g. 1800"
+                min="300"
+                max="10000"
+                className={inputClass}
               />
             </div>
 
             <div>
-              <label>Bedrooms</label>
+              <label className="font-semibold">Bedrooms</label>
 
               <input
                 type="number"
                 name="bedrooms"
                 value={form.bedrooms}
                 onChange={handleChange}
-                className="w-full mt-2 rounded-xl bg-slate-800 p-4 outline-none"
+                placeholder="e.g. 3"
+                min="1"
+                max="10"
+                className={inputClass}
               />
             </div>
 
             <div>
-              <label>Bathrooms</label>
+              <label className="font-semibold">Bathrooms</label>
 
               <input
                 type="number"
                 name="bathrooms"
                 value={form.bathrooms}
                 onChange={handleChange}
-                className="w-full mt-2 rounded-xl bg-slate-800 p-4 outline-none"
+                placeholder="e.g. 2"
+                min="0.5"
+                max="10"
+                step="0.5"
+                className={inputClass}
               />
             </div>
 
             <div>
-              <label>House Age</label>
+              <label className="font-semibold">House Age</label>
 
               <input
                 type="number"
                 name="age"
                 value={form.age}
                 onChange={handleChange}
-                className="w-full mt-2 rounded-xl bg-slate-800 p-4 outline-none"
+                placeholder="e.g. 12"
+                min="0"
+                max="150"
+                className={inputClass}
               />
             </div>
 
-            <button className="w-full mt-6 rounded-xl bg-cyan-500 py-4 font-bold hover:bg-cyan-400 transition">
-              Estimate Property
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full mt-6 rounded-xl bg-[#111111] py-4 font-bold text-white hover:bg-[#6B705C] transition disabled:opacity-50"
+            >
+              {loading ? "Estimating..." : "Estimate Property"}
             </button>
           </form>
         </div>
 
-        {/* Right Card */}
+        {/* Result */}
+        <div className="bg-[#111111] rounded-3xl p-8 text-white min-h-[500px] flex flex-col">
+          <div>
+            <p className="uppercase tracking-[0.25em] text-[#A5A58D] text-sm font-semibold">
+              Machine Learning Result
+            </p>
 
-        <div className="rounded-3xl bg-slate-900 border border-white/10 p-8">
-          <h2 className="text-2xl font-bold mb-8">AI Prediction</h2>
+            <h2 className="text-3xl font-black mt-2">Estimated Value</h2>
+          </div>
 
-          {loading ? <LoadingSpinner /> : <ResultCard price={price} />}
+          <div className="flex-1 flex items-center justify-center">
+            {loading ? <LoadingSpinner /> : <ResultCard price={price} />}
+          </div>
+
+          <p className="text-gray-400 text-sm text-center mt-6">
+            This value is an AI-generated estimate and should not be considered
+            a professional property appraisal.
+          </p>
         </div>
       </div>
     </section>
