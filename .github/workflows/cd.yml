@@ -14,11 +14,9 @@ on:
         default: ""
 
 env:
-
   NODE_VERSION_FILE_BE: be/.nvmrc
   NODE_VERSION_FILE_FE: Website/.nvmrc
   TAG: ${{ github.event.inputs.release_tag || format('build-{0}', github.run_number) }}
-
 
 jobs:
   ci:
@@ -162,6 +160,16 @@ jobs:
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Provision EKS with Terraform
+        working-directory: infra/terraform
+        run: |
+          terraform init
+          terraform apply -auto-approve -var="region=${{ env.AWS_REGION }}"
+          echo "EKS_CLUSTER_NAME=$(terraform output -raw cluster_name)" >> "$GITHUB_ENV"
+
       - name: Update kubeconfig for EKS
         run: |
           aws eks update-kubeconfig \
@@ -170,11 +178,10 @@ jobs:
 
       - name: Update Kubernetes image tags
         run: |
-
           echo "Updating all kubernetes yaml files to use tag: ${TAG}"
-          sed -i "s|image: .*/backend-real-estate:.*|image: ${{ env.DOCKERHUB_USERNAME }}/backend-real-estate:${{ env.TAG }}|g" kube/*.yaml
-          sed -i "s|image: .*/frontend-real-estate:.*|image: ${{ env.DOCKERHUB_USERNAME }}/frontend-real-estate:${{ env.TAG }}|g" kube/*.yaml
-          sed -i "s|image: .*/predictor-real-estate:.*|image: ${{ env.DOCKERHUB_USERNAME }}/predictor-real-estate:${{ env.TAG }}|g" kube/*.yaml
+          sed -i "s|image: .*/backend-real-estate:.*|image: ${{ env.DOCKERHUB_USERNAME }}/backend-real-estate:${{ env.TAG }}|g" infra/kube/*.yaml
+          sed -i "s|image: .*/frontend-real-estate:.*|image: ${{ env.DOCKERHUB_USERNAME }}/frontend-real-estate:${{ env.TAG }}|g" infra/kube/*.yaml
+          sed -i "s|image: .*/predictor-real-estate:.*|image: ${{ env.DOCKERHUB_USERNAME }}/predictor-real-estate:${{ env.TAG }}|g" infra/kube/*.yaml
 
       - name: Deploy manifests to EKS
-        run: kubectl apply -f kube -n real-estate-prod
+        run: kubectl apply -f infra/kube -n real-estate-prod
