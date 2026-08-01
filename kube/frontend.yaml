@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: frontend-container
-        image: abdulrhmanmokhtar/front-real-estate:v1
+        image: abdulrhmanmokhtar/frontend-real-estate:v1
         ports:
         - containerPort: 80
 
