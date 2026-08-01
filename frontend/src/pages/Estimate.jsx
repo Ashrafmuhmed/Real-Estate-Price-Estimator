@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { estimateHouse } from "../secrvices/api";
-import ResultCard from "../Components/resultsCard";
-import LoadingSpinner from "../Components/LoadingSpinner";
+import { estimateHouse } from "../services/api";
+import ResultCard from "../components/resultsCard";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 export default function Estimate() {
   const [form, setForm] = useState({

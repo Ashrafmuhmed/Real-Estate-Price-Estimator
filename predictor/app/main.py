@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 from .predictor import Predictor
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_MODEL_DIR = PROJECT_ROOT / "Data & Model Training" / "model"
+DEFAULT_MODEL_DIR = PROJECT_ROOT / "ml" / "model"
 
 
 class Features(BaseModel):

@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { estimatePortfolio } from "../secrvices/api";
-import LoadingSpinner from "../Components/LoadingSpinner";
+import { estimatePortfolio } from "../services/api";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const emptyHouse = {
   sqft: "",
