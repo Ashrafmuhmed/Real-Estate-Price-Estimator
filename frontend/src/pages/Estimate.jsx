@@ -114,9 +114,9 @@ export default function Estimate() {
                 value={form.bathrooms}
                 onChange={handleChange}
                 placeholder="e.g. 2"
-                min="0.5"
+                min="1"
                 max="10"
-                step="0.5"
+                step="1"
                 className={inputClass}
               />
             </div>
