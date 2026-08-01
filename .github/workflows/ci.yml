@@ -8,7 +8,7 @@ on:
 
 jobs:
     backend:
-        name: Backend (be) - Node.js
+        name: Backend - Node.js
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
@@ -16,21 +16,21 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version-file: "be/.nvmrc"
+                  node-version-file: "backend/.nvmrc"
                   cache: "npm"
-                  cache-dependency-path: be/package-lock.json
+                  cache-dependency-path: backend/package-lock.json
             - name: Install dependencies
-              working-directory: be
+              working-directory: backend
               run: npm ci
             - name: Lint
-              working-directory: be
+              working-directory: backend
               run: npm run lint || echo "no lint script"
             - name: Test
-              working-directory: be
+              working-directory: backend
               run: npm test
 
     frontend:
-        name: Frontend (Website) - Node.js
+        name: Frontend - Node.js
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
@@ -38,24 +38,24 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version-file: "Website/.nvmrc"
+                  node-version-file: "frontend/.nvmrc"
                   cache: "npm"
-                  cache-dependency-path: Website/package-lock.json
+                  cache-dependency-path: frontend/package-lock.json
             - name: Install dependencies
-              working-directory: Website
+              working-directory: frontend
               run: npm ci
             - name: Lint
-              working-directory: Website
+              working-directory: frontend
               run: npm run lint || echo "no lint script"
             - name: Test
-              working-directory: Website
+              working-directory: frontend
               run: npm test || echo "no tests"
             - name: Build
-              working-directory: Website
+              working-directory: frontend
               run: npm run build || echo "no build script"
 
     predictor:
-        name: Predictor (predictor_service) - Python
+        name: Predictor - Python
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
@@ -69,15 +69,16 @@ jobs:
               uses: actions/cache@v4
               with:
                   path: ~/.cache/pip
-                  key: ${{ runner.os }}-pip-${{ hashFiles('predictor_service/requirements.txt') }}
+                  key: ${{ runner.os }}-pip-${{ hashFiles('predictor/requirements.txt') }}
                   restore-keys: |
                       ${{ runner.os }}-pip-
             - name: Install dependencies
-              working-directory: predictor_service
+              working-directory: predictor
               run: |
                   python -m pip install --upgrade pip
                   pip install -r requirements.txt
             - name: Run tests
-              run: pytest predictor_service/tests -q
+              working-directory: predictor
+              run: pytest tests -q
               env:
-                  PYTHONPATH: . 
+                  PYTHONPATH: ..

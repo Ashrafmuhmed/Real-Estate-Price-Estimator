@@ -14,9 +14,11 @@ on:
         default: ""
 
 env:
+
   NODE_VERSION_FILE_BE: be/.nvmrc
   NODE_VERSION_FILE_FE: Website/.nvmrc
   TAG: ${{ github.event.inputs.release_tag || format('build-{0}', github.run_number) }}
+
 
 jobs:
   ci:
@@ -32,15 +34,15 @@ jobs:
         with:
           node-version-file: ${{ env.NODE_VERSION_FILE_BE }}
           cache: npm
-          cache-dependency-path: be/package-lock.json
+          cache-dependency-path: backend/package-lock.json
       - name: Install backend dependencies
-        working-directory: be
+        working-directory: backend
         run: npm ci
       - name: Backend lint
-        working-directory: be
+        working-directory: backend
         run: npm run lint || echo "no lint script"
       - name: Backend test
-        working-directory: be
+        working-directory: backend
         run: npm test
 
       - name: Setup Node.js for frontend
@@ -48,18 +50,18 @@ jobs:
         with:
           node-version-file: ${{ env.NODE_VERSION_FILE_FE }}
           cache: npm
-          cache-dependency-path: Website/package-lock.json
+          cache-dependency-path: frontend/package-lock.json
       - name: Install frontend dependencies
-        working-directory: Website
+        working-directory: frontend
         run: npm ci
       - name: Frontend lint
-        working-directory: Website
+        working-directory: frontend
         run: npm run lint || echo "no lint script"
       - name: Frontend test
-        working-directory: Website
+        working-directory: frontend
         run: npm test || echo "no tests"
       - name: Frontend build
-        working-directory: Website
+        working-directory: frontend
         run: npm run build || echo "no build script"
 
       - name: Setup Python
@@ -70,16 +72,16 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('predictor_service/requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('predictor/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
       - name: Install predictor dependencies
-        working-directory: predictor_service
+        working-directory: predictor
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Predictor tests
-        working-directory: predictor_service
+        working-directory: predictor
         run: pytest tests -q
         env:
           PYTHONPATH: ..
@@ -108,16 +110,16 @@ jobs:
       - name: Build and push backend image
         uses: docker/build-push-action@v5
         with:
-          context: ./be
-          file: ./be/Dockerfile
+          context: ./backend
+          file: ./backend/Dockerfile
           push: true
           tags: ${{ env.DOCKERHUB_USERNAME }}/backend-real-estate:${{ env.TAG }}
 
       - name: Build and push frontend image
         uses: docker/build-push-action@v5
         with:
-          context: ./Website
-          file: ./Website/Dockerfile
+          context: ./frontend
+          file: ./frontend/Dockerfile
           push: true
           tags: ${{ env.DOCKERHUB_USERNAME }}/frontend-real-estate:${{ env.TAG }}
 
@@ -125,7 +127,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./predictor_service/Dockerfile
+          file: ./predictor/Dockerfile
           push: true
           tags: ${{ env.DOCKERHUB_USERNAME }}/predictor-real-estate:${{ env.TAG }}
 
@@ -168,6 +170,7 @@ jobs:
 
       - name: Update Kubernetes image tags
         run: |
+
           echo "Updating all kubernetes yaml files to use tag: ${TAG}"
           sed -i "s|image: .*/backend-real-estate:.*|image: ${{ env.DOCKERHUB_USERNAME }}/backend-real-estate:${{ env.TAG }}|g" kube/*.yaml
           sed -i "s|image: .*/frontend-real-estate:.*|image: ${{ env.DOCKERHUB_USERNAME }}/frontend-real-estate:${{ env.TAG }}|g" kube/*.yaml

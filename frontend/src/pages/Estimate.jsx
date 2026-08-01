@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { estimateHouse } from "../secrvices/api";
-import ResultCard from "../Components/resultsCard";
-import LoadingSpinner from "../Components/LoadingSpinner";
-
+import { estimateHouse } from "../services/api";
+import ResultCard from "../components/resultsCard";
+import LoadingSpinner from "../components/LoadingSpinner";
+import ErrorMessage from "../components/ErrorMessage";
 export default function Estimate() {
   const [form, setForm] = useState({
     sqft: "",
@@ -13,8 +13,10 @@ export default function Estimate() {
 
   const [loading, setLoading] = useState(false);
   const [price, setPrice] = useState(null);
+  const [error, setError] = useState("");
 
   function handleChange(e) {
+    setError("");
     setForm({
       ...form,
       [e.target.name]: e.target.value,
@@ -25,11 +27,12 @@ export default function Estimate() {
     e.preventDefault();
 
     if (!form.sqft || !form.bedrooms || !form.bathrooms || !form.age) {
-      alert("Please fill in all fields.");
+      setError("Please fill in all fields.");
       return;
     }
 
     try {
+      setError("");
       setLoading(true);
       setPrice(null);
 
@@ -37,7 +40,7 @@ export default function Estimate() {
 
       setPrice(result.predicted_price);
     } catch (error) {
-      alert(error.message);
+      setError("Error estimating property value. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -114,9 +117,9 @@ export default function Estimate() {
                 value={form.bathrooms}
                 onChange={handleChange}
                 placeholder="e.g. 2"
-                min="0.5"
+                min="1"
                 max="10"
-                step="0.5"
+                step="1"
                 className={inputClass}
               />
             </div>
@@ -143,6 +146,7 @@ export default function Estimate() {
             >
               {loading ? "Estimating..." : "Estimate Property"}
             </button>
+            <ErrorMessage message={error} />
           </form>
         </div>
 

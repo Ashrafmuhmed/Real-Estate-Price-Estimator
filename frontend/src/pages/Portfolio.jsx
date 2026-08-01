@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { estimatePortfolio } from "../secrvices/api";
-import LoadingSpinner from "../Components/LoadingSpinner";
-
+import { estimatePortfolio } from "../services/api";
+import LoadingSpinner from "../components/LoadingSpinner";
+import ErrorMessage from "../components/ErrorMessage";
 const emptyHouse = {
   sqft: "",
   bedrooms: "",
@@ -14,8 +14,10 @@ export default function Portfolio() {
 
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   function handleChange(index, e) {
+    setError("");
     const updatedHouses = [...houses];
 
     updatedHouses[index] = {
@@ -28,7 +30,7 @@ export default function Portfolio() {
 
   function addHouse() {
     if (houses.length >= 100) {
-      alert("You can estimate up to 100 properties.");
+      setError("You can estimate up to 100 properties.");
       return;
     }
 
@@ -52,11 +54,12 @@ export default function Portfolio() {
     );
 
     if (incomplete) {
-      alert("Please complete all property fields.");
+      setError("Please complete all property fields.");
       return;
     }
 
     try {
+      setError("");
       setLoading(true);
       setResults(null);
 
@@ -64,7 +67,7 @@ export default function Portfolio() {
 
       setResults(result);
     } catch (error) {
-      alert(error.message);
+      setError("Error estimating portfolio. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -145,9 +148,9 @@ export default function Portfolio() {
                   value={house.bathrooms}
                   onChange={(e) => handleChange(index, e)}
                   placeholder="2"
-                  min="0.5"
+                  min="1"
                   max="10"
-                  step="0.5"
+                  step="1"
                 />
 
                 <Input
@@ -185,6 +188,7 @@ export default function Portfolio() {
       </form>
 
       {/* Results */}
+      <ErrorMessage message={error} />
       <div className="mt-12">
         {loading && (
           <div className="bg-[#111111] rounded-3xl p-12 text-center">

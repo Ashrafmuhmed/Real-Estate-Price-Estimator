@@ -10,8 +10,8 @@ import joblib
 import numpy as np
 from fastapi.testclient import TestClient
 
-from predictor_service.app.main import create_app
-from predictor_service.app.predictor import Predictor
+from predictor.app.main import create_app
+from predictor.app.predictor import Predictor
 
 
 class DummyScaler:
@@ -58,7 +58,7 @@ class PredictorServiceTests(unittest.TestCase):
         self.assertEqual(len(results), 2)
         self.assertTrue(all(price >= 0.0 for price in results))
 
-    @patch("predictor_service.app.main.Predictor.from_model_dir")
+    @patch("predictor.app.main.Predictor.from_model_dir")
     def test_app_loads_predictor_once(self, from_model_dir):
         fake_predictor = Mock()
         fake_predictor.predict_one.return_value = 120000.0
