@@ -3,18 +3,27 @@ name: CI/CD
 on:
   workflow_dispatch:
     inputs:
+      is_rollback:
+        description: "Is this a Rollback? (If checked, skips Build/Push and only deploys the release_tag)"
+        type: boolean
+        required: true
+        default: false
       release_tag:
-        description: "Optional Docker image tag to use (e.g. v1.2.3). If empty, workflow will use build-<run_number>"
+        description: "Optional Docker image tag (e.g. v1.2.3). MUST be provided if is_rollback is true."
         required: false
         default: ""
 
 env:
-  NODE_VERSION_FILE_BE: backend/.nvmrc
-  NODE_VERSION_FILE_FE: frontend/.nvmrc
+
+  NODE_VERSION_FILE_BE: be/.nvmrc
+  NODE_VERSION_FILE_FE: Website/.nvmrc
+  TAG: ${{ github.event.inputs.release_tag || format('build-{0}', github.run_number) }}
+
 
 jobs:
   ci:
     name: CI
+    if: github.event.inputs.is_rollback == 'false'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -80,11 +89,11 @@ jobs:
   publish:
     name: Build and push Docker images
     needs: ci
+    if: github.event.inputs.is_rollback == 'false'
     runs-on: ubuntu-latest
     env:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-      TAG: ${{ github.event.inputs.release_tag || format('build-{0}', github.run_number) }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -122,15 +131,13 @@ jobs:
           push: true
           tags: ${{ env.DOCKERHUB_USERNAME }}/predictor-real-estate:${{ env.TAG }}
 
-      - name: Save image tags
-        run: |
-          echo "BACKEND_IMAGE=${{ env.DOCKERHUB_USERNAME }}/backend-real-estate:${{ env.TAG }}" >> $GITHUB_ENV
-          echo "FRONTEND_IMAGE=${{ env.DOCKERHUB_USERNAME }}/frontend-real-estate:${{ env.TAG }}" >> $GITHUB_ENV
-          echo "PREDICTOR_IMAGE=${{ env.DOCKERHUB_USERNAME }}/predictor-real-estate:${{ env.TAG }}" >> $GITHUB_ENV
-
   deploy:
     name: Deploy to AWS EKS
     needs: publish
+    if: |
+      always() && 
+      ( (github.event.inputs.is_rollback == 'true') || 
+        (github.event.inputs.is_rollback == 'false' && needs.publish.result == 'success') )
     runs-on: ubuntu-latest
     env:
       AWS_REGION: ${{ secrets.AWS_REGION }}
@@ -138,10 +145,15 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       EKS_CLUSTER_NAME: ${{ secrets.EKS_CLUSTER_NAME }}
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      TAG: ${{ github.event.inputs.release_tag || format('build-{0}', github.run_number) }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Verify Rollback Tag
+        if: github.event.inputs.is_rollback == 'true' && github.event.inputs.release_tag == ''
+        run: |
+          echo "ERROR: You must provide a 'release_tag' when is_rollback is true!"
+          exit 1
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
@@ -158,19 +170,11 @@ jobs:
 
       - name: Update Kubernetes image tags
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          images = {
-              'abdulrhmanmokhtar/backend-real-estate:v1': '${{ env.DOCKERHUB_USERNAME }}/backend-real-estate:${{ env.TAG }}',
-              'abdulrhmanmokhtar/frontend-real-estate:v1': '${{ env.DOCKERHUB_USERNAME }}/frontend-real-estate:${{ env.TAG }}',
-              'abdulrhmanmokhtar/predictor-real-estate:v1': '${{ env.DOCKERHUB_USERNAME }}/predictor-real-estate:${{ env.TAG }}',
-          }
-          for path in ['infra/kube/backend.yaml', 'infra/kube/frontend.yaml', 'infra/kube/predictor.yaml']:
-              text = Path(path).read_text()
-              for old, new in images.items():
-                  text = text.replace(old, new)
-              Path(path).write_text(text)
-          PY
+
+          echo "Updating all kubernetes yaml files to use tag: ${TAG}"
+          sed -i "s|image: .*/backend-real-estate:.*|image: ${{ env.DOCKERHUB_USERNAME }}/backend-real-estate:${{ env.TAG }}|g" kube/*.yaml
+          sed -i "s|image: .*/frontend-real-estate:.*|image: ${{ env.DOCKERHUB_USERNAME }}/frontend-real-estate:${{ env.TAG }}|g" kube/*.yaml
+          sed -i "s|image: .*/predictor-real-estate:.*|image: ${{ env.DOCKERHUB_USERNAME }}/predictor-real-estate:${{ env.TAG }}|g" kube/*.yaml
 
       - name: Deploy manifests to EKS
-        run: kubectl apply -f infra/kube -n real-estate-prod
+        run: kubectl apply -f kube -n real-estate-prod
