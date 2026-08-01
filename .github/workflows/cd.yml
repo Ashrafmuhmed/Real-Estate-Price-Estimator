@@ -14,8 +14,8 @@ on:
         default: ""
 
 env:
-  NODE_VERSION_FILE_BE: be/.nvmrc
-  NODE_VERSION_FILE_FE: Website/.nvmrc
+  NODE_VERSION_FILE_BE: backend/.nvmrc
+  NODE_VERSION_FILE_FE: frontend/.nvmrc
   TAG: ${{ github.event.inputs.release_tag || format('build-{0}', github.run_number) }}
 
 jobs:
