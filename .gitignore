@@ -4,4 +4,14 @@ __pycache__/
 node_modules/
 .env
 .env.local
-Website/node_modules/
+frontend/node_modules/
+frontend/dist
+
+.pytest_cache/
+.vscode/
+.idea/
+.DS_Store
+.ipynb_checkpoints/
+coverage/
+.coverage
+*.log
