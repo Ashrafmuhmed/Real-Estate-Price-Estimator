@@ -160,15 +160,6 @@ jobs:
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v3
-
-      - name: Provision EKS with Terraform
-        working-directory: infra/terraform
-        run: |
-          terraform init
-          terraform apply -auto-approve -var="region=${{ env.AWS_REGION }}"
-          echo "EKS_CLUSTER_NAME=$(terraform output -raw cluster_name)" >> "$GITHUB_ENV"
 
       - name: Update kubeconfig for EKS
         run: |
