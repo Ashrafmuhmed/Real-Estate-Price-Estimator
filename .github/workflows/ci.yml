@@ -17,6 +17,7 @@ jobs:
               with:
                   node-version-file: "be/.nvmrc"
                   cache: "npm"
+                  cache-dependency-path: be/package-lock.json
             - name: Install dependencies
               working-directory: be
               run: npm ci
@@ -38,6 +39,7 @@ jobs:
               with:
                   node-version-file: "Website/.nvmrc"
                   cache: "npm"
+                  cache-dependency-path: Website/package-lock.json
             - name: Install dependencies
               working-directory: Website
               run: npm ci
@@ -60,19 +62,20 @@ jobs:
             - name: Setup Python
               uses: actions/setup-python@v4
               with:
-                  python-version: "3.9"
+                  python-version: "3.12"
+                  cache: "pip"
             - name: Cache pip
               uses: actions/cache@v4
               with:
                   path: ~/.cache/pip
-                  key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+                  key: ${{ runner.os }}-pip-${{ hashFiles('predictor_service/requirements.txt') }}
                   restore-keys: |
                       ${{ runner.os }}-pip-
             - name: Install dependencies
               working-directory: predictor_service
               run: |
                   python -m pip install --upgrade pip
-                  if [ -f requirements.txt ]; then pip install -r requirements.txt; else pip install pytest; fi
+                  pip install -r requirements.txt
             - name: Run tests
               working-directory: predictor_service
               run: pytest -q

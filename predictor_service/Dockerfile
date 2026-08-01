@@ -5,13 +5,7 @@ WORKDIR /app
 COPY ["predictor_service", "predictor_service"]
 COPY ["Data & Model Training/model", "Data & Model Training/model"]
 
-RUN pip install --no-cache-dir \
-    fastapi \
-    "uvicorn[standard]" \
-    joblib \
-    numpy \
-    pandas \
-    scikit-learn
+RUN pip install --no-cache-dir -r predictor_service/requirements.txt
 
 EXPOSE 8000
 
