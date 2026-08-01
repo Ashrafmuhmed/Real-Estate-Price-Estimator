@@ -4,9 +4,9 @@ This service wraps the trained Python model behind HTTP and is intended to be ca
 
 ## Service location
 
-- App entrypoint: `predictor_service/app/main.py`
-- Model adapter: `predictor_service/app/predictor.py`
-- Default model artifacts dir: `Data & Model Training/model/`
+- App entrypoint: `predictor/app/main.py`
+- Model adapter: `predictor/app/predictor.py`
+- Default model artifacts dir: `ml/model/`
 
 ## Run locally
 
@@ -14,7 +14,7 @@ From repository root:
 
 ```bash
 python -m pip install fastapi "uvicorn[standard]" pandas numpy joblib scikit-learn
-uvicorn predictor_service.app.main:app --host 0.0.0.0 --port 8001
+uvicorn predictor.app.main:app --host 0.0.0.0 --port 8001
 ```
 
 Health check:
