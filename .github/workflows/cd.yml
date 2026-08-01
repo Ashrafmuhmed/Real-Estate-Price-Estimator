@@ -137,6 +137,8 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       EKS_CLUSTER_NAME: ${{ secrets.EKS_CLUSTER_NAME }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      TAG: ${{ github.event.inputs.release_tag || format('build-{0}', github.run_number) }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
